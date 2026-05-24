@@ -1,0 +1,77 @@
+══════════════════════════════════════════════════════════════
+  INVITADOS - XV AÑOS DE ANAID JULIANA
+  Lista de invitados con sus links personalizados
+══════════════════════════════════════════════════════════════
+
+INSTRUCCIONES:
+──────────────
+1. Abre el archivo invitacion.html en tu computador normalmente.
+2. Para enviar la invitación personalizada a cada persona,
+   usa el link que aparece al lado de su nombre.
+3. Sube el archivo invitacion.html y la foto a un servicio
+   como Google Drive, Netlify, GitHub Pages, etc., y reemplaza
+   "invitacion.html" en los links por la URL pública.
+
+CÓMO AGREGAR MÁS INVITADOS:
+────────────────────────────
+El formato del link es:
+  invitacion.html?invitado=NOMBRE+APELLIDO
+
+Si el nombre tiene tildes o caracteres especiales, reemplázalos:
+  á → %C3%A1    é → %C3%A9    í → %C3%AD
+  ó → %C3%B3    ú → %C3%BA    ñ → %C3%B1
+O simplemente escríbelo sin tilde en el link:
+  invitacion.html?invitado=Maria+Gomez
+
+══════════════════════════════════════════════════════════════
+  LISTA DE INVITADOS Y LINKS PERSONALIZADOS
+══════════════════════════════════════════════════════════════
+
+ 1. Juan Pérez
+    → invitacion.html?invitado=Juan+P%C3%A9rez
+
+ 2. María Gómez
+    → invitacion.html?invitado=Mar%C3%ADa+G%C3%B3mez
+
+ 3. Familia Rodríguez
+    → invitacion.html?invitado=Familia+Rodr%C3%ADguez
+
+ 4. Carlos Martínez
+    → invitacion.html?invitado=Carlos+Mart%C3%ADnez
+
+ 5. Laura Sánchez
+    → invitacion.html?invitado=Laura+S%C3%A1nchez
+
+ 6. Familia López
+    → invitacion.html?invitado=Familia+L%C3%B3pez
+
+ 7. Andrea Torres
+    → invitacion.html?invitado=Andrea+Torres
+
+ 8. Diego Herrera
+    → invitacion.html?invitado=Diego+Herrera
+
+──────────────────────────────────────────────────────────────
+  AGREGA TUS INVITADOS REALES AQUÍ  ↓
+──────────────────────────────────────────────────────────────
+
+ 9. (Nombre del invitado)
+    → invitacion.html?invitado=Nombre+Apellido
+
+10. (Nombre del invitado)
+    → invitacion.html?invitado=Nombre+Apellido
+
+11. (Nombre del invitado)
+    → invitacion.html?invitado=Nombre+Apellido
+
+══════════════════════════════════════════════════════════════
+  CONSEJO PARA COMPARTIR POR WHATSAPP
+══════════════════════════════════════════════════════════════
+Si publicas la invitación en internet (ej. con Netlify gratis),
+tu link quedaría así:
+
+  https://TU-SITIO.netlify.app/invitacion.html?invitado=Juan+P%C3%A9rez
+
+Ese link lo pegas en WhatsApp y la persona verá su nombre
+personalizado al abrir la invitación. ✨
+══════════════════════════════════════════════════════════════

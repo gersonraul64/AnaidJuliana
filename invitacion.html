@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quinceañera · Anaid Juliana</title>
+
+  <!-- ═══════════════════════════════════════════════════════
+       TIPOGRAFÍAS ELEGANTES
+  ════════════════════════════════════════════════════════ -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════════════════
+       VARIABLES DE COLOR — edita aquí para cambiar tema
+    ══════════════════════════════════════════════════ */
+    :root {
+      --blanco:       #FFFFFF;
+      --lila-claro:   #EDE0F5;
+      --lila-medio:   #C9A8E0;
+      --lila-intenso: #9B6DBF;
+      --lila-oscuro:  #6B3FA0;
+      --dorado:       #C9A84C;
+      --dorado-claro: #F0D98C;
+      --sombra-lila:  rgba(107, 63, 160, 0.25);
+    }
+
+    /* ══════════════════════════════════════════════════
+       RESET & BASE
+    ══════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #F5EEFF 0%, #EDE0F5 40%, #FAF5FF 70%, #EAD8F8 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #3a1d6e;
+    }
+
+    /* ══════════════════════════════════════════════════
+       CANVAS DE PARTÍCULAS (fondo)
+    ══════════════════════════════════════════════════ */
+    #particles-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══════════════════════════════════════════════════
+       ① PANTALLA DEL SOBRE
+    ══════════════════════════════════════════════════ */
+    #envelope-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    #envelope-screen.hide {
+      opacity: 0;
+      transform: scale(0.92);
+      pointer-events: none;
+    }
+
+    /* Texto sobre el sobre */
+    .envelope-intro {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 3vw, 1.35rem);
+      font-style: italic;
+      color: var(--lila-oscuro);
+      letter-spacing: 0.06em;
+      margin-bottom: 2.4rem;
+      text-align: center;
+      opacity: 0;
+      animation: fadeInDown 1.2s ease 0.5s forwards;
+    }
+
+    /* Contenedor del sobre */
+    #envelope-wrap {
+      position: relative;
+      width: clamp(280px, 55vw, 480px);
+      cursor: pointer;
+      filter: drop-shadow(0 18px 48px rgba(107,63,160,.35));
+      transition: transform 0.3s ease;
+    }
+    #envelope-wrap:hover { transform: translateY(-6px) scale(1.02); }
+
+    /* SVG del sobre */
+    #envelope-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Solapa del sobre (tapa superior) */
+    .flap {
+      transform-origin: top center;
+      transform-box: fill-box;
+      transition: transform 0.7s cubic-bezier(.4,0,.2,1);
+    }
+    #envelope-wrap.opening .flap {
+      transform: rotateX(180deg);
+    }
+
+    /* Texto dentro del sobre */
+    .env-label {
+      position: absolute;
+      bottom: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 82%;
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(0.75rem, 2.2vw, 1rem);
+      font-style: italic;
+      color: var(--lila-oscuro);
+      line-height: 1.55;
+      pointer-events: none;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.4s forwards;
+    }
+
+    /* Botón hint */
+    .click-hint {
+      margin-top: 2rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lila-intenso);
+      opacity: 0;
+      animation: pulse 2.5s ease 2.5s infinite, fadeIn 1s ease 2s forwards;
+    }
+
+    /* ══════════════════════════════════════════════════
+       ② TARJETA PRINCIPAL (oculta hasta abrir sobre)
+    ══════════════════════════════════════════════════ */
+    #invitation-card {
+      display: none;
+      position: relative;
+      z-index: 5;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: clamp(1rem, 4vw, 2.5rem);
+    }
+
+    #invitation-card.visible {
+      display: block;
+      animation: riseUp 0.9s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+    /* Tarjeta contenedor */
+    .card-box {
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(18px);
+      border-radius: 24px;
+      border: 1.5px solid rgba(201,168,224,0.55);
+      box-shadow:
+        0 4px 24px var(--sombra-lila),
+        0 32px 80px rgba(107,63,160,.12),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+
+    /* Franja superior decorativa */
+    .card-header-bar {
+      height: 5px;
+      background: linear-gradient(90deg, var(--lila-claro), var(--lila-intenso), var(--dorado), var(--lila-intenso), var(--lila-claro));
+    }
+
+    /* Área interior */
+    .card-inner {
+      padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1.5rem, 5vw, 3rem);
+    }
+
+    /* ── Encabezado de la tarjeta ── */
+    .card-tagline {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+      font-style: italic;
+      color: var(--lila-medio);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.6rem;
+    }
+
+    .card-title {
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 9vw, 4.8rem);
+      font-weight: 700;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--lila-oscuro) 0%, var(--lila-intenso) 50%, var(--dorado) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-subtitle {
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.1rem, 3.5vw, 1.7rem);
+      font-style: italic;
+      font-weight: 300;
+      color: var(--lila-intenso);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Divisor dorado */
+    .gold-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.4rem auto;
+      max-width: 340px;
+    }
+    .gold-divider::before,
+    .gold-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--dorado), transparent);
+    }
+    .gold-divider-icon {
+      color: var(--dorado);
+      font-size: 1.1rem;
+    }
+
+    /* ── Foto principal ── */
+    .photo-frame {
+      position: relative;
+      width: clamp(180px, 50%, 280px);
+      margin: 0 auto 1.8rem;
+    }
+
+    .photo-frame::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--lila-claro), var(--dorado-claro), var(--lila-medio), var(--dorado-claro), var(--lila-claro));
+      animation: spin 8s linear infinite;
+      z-index: 0;
+    }
+
+    .photo-frame::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: white;
+      z-index: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FOTO PRINCIPAL — reemplaza src con la URL de la foto
+       ════════════════════════════════════════════════════ */
+    .photo-img {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      animation: photoReveal 1.2s ease forwards;
+      background: linear-gradient(135deg, var(--lila-claro), var(--lila-medio));
+    }
+
+    /* Placeholder cuando no hay foto */
+    .photo-placeholder {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--lila-claro) 0%, var(--lila-medio) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: photoReveal 1.2s ease forwards;
+    }
+
+    .photo-placeholder span {
+      font-size: clamp(2.5rem, 10vw, 4rem);
+      margin-bottom: 0.4rem;
+    }
+
+    .photo-placeholder p {
+      font-size: 0.7rem;
+      color: rgba(107,63,160,0.7);
+      text-align: center;
+      padding: 0 1rem;
+      line-height: 1.4;
+    }
+
+    /* ── Detalles del evento ── */
+    .event-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin: 1.8rem 0;
+    }
+
+    .detail-card {
+      background: linear-gradient(135deg, rgba(237,224,245,0.6), rgba(255,255,255,0.8));
+      border: 1px solid rgba(201,168,224,0.4);
+      border-radius: 14px;
+      padding: 1.1rem 1rem;
+      text-align: center;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .detail-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--sombra-lila);
+    }
+
+    .detail-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .detail-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--lila-medio);
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       DATOS DEL EVENTO — edita aquí
+       ════════════════════════════════════════════════════ */
+    .detail-value {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(0.85rem, 2.2vw, 1rem);
+      color: var(--lila-oscuro);
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .detail-note {
+      font-size: 0.72rem;
+      color: var(--lila-intenso);
+      margin-top: 0.25rem;
+      font-style: italic;
+    }
+
+    /* ── Código de vestimenta ── */
+    .dress-code {
+      text-align: center;
+      margin: 1.2rem 0;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, rgba(237,224,245,0.5), rgba(255,255,255,0.7));
+      border-radius: 14px;
+      border: 1px dashed rgba(201,168,224,0.6);
+    }
+
+    .dress-code-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lila-medio);
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+
+    .dress-code-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--lila-oscuro);
+      font-style: italic;
+    }
+
+    /* ── Sección de invitado personalizado ── */
+    .guests-section {
+      margin: 1.8rem 0;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      font-style: italic;
+      color: var(--lila-oscuro);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    /* Tarjeta de invitado personalizado */
+    .personal-invite-box {
+      text-align: center;
+      padding: 1.8rem 1.5rem;
+      background: linear-gradient(135deg, rgba(237,224,245,0.7), rgba(255,255,255,0.85));
+      border: 1.5px solid rgba(201,168,224,0.55);
+      border-radius: 18px;
+      box-shadow: 0 6px 28px var(--sombra-lila);
+      animation: fadeInDown 0.7s ease forwards;
+    }
+
+    .personal-invite-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lila-medio);
+      font-weight: 500;
+      margin-bottom: 0.6rem;
+    }
+
+    .personal-invite-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 700;
+      color: var(--lila-oscuro);
+      line-height: 1.2;
+      margin-bottom: 0.6rem;
+    }
+
+    .personal-invite-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+      font-style: italic;
+      color: var(--lila-intenso);
+    }
+
+    /* Sin invitado en la URL */
+    .no-guest-box {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--lila-medio);
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    /* ── Mensaje personal ── */
+    .personal-message {
+      text-align: center;
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(237,224,245,0.4), rgba(255,255,255,0.6));
+      border-radius: 16px;
+      border-left: 3px solid var(--lila-intenso);
+    }
+
+    .personal-message p {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 3vw, 1.25rem);
+      font-style: italic;
+      color: var(--lila-oscuro);
+      line-height: 1.7;
+    }
+
+    /* ── Botones de acción ── */
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin: 2rem 0 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.85rem 1.9rem;
+      border-radius: 999px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.06);
+    }
+
+    /* Botón WhatsApp */
+    .btn-whatsapp {
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: white;
+      box-shadow: 0 6px 20px rgba(37,211,102,.35);
+    }
+
+    /* Botón música */
+    .btn-music {
+      background: linear-gradient(135deg, var(--lila-intenso), var(--lila-oscuro));
+      color: white;
+      box-shadow: 0 6px 20px var(--sombra-lila);
+    }
+
+    .btn-music.playing {
+      background: linear-gradient(135deg, var(--dorado), #a07820);
+    }
+
+    /* ── Pie de tarjeta ── */
+    .card-footer {
+      text-align: center;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(201,168,224,0.3);
+    }
+
+    .card-footer p {
+      font-size: 0.72rem;
+      color: var(--lila-medio);
+      letter-spacing: 0.12em;
+    }
+
+    .footer-ornament {
+      font-size: 1.2rem;
+      color: var(--dorado);
+      margin-top: 0.5rem;
+    }
+
+    /* ══════════════════════════════════════════════════
+       ANIMACIONES
+    ══════════════════════════════════════════════════ */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes riseUp {
+      from { opacity: 0; transform: translateY(60px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes photoReveal {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    /* Envuelve el sobre en flotación suave */
+    #envelope-wrap { animation: float 3.5s ease-in-out infinite; }
+    #envelope-wrap:hover { animation-play-state: paused; }
+
+    /* ══════════════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════════════ */
+    @media (max-width: 600px) {
+      .event-details { grid-template-columns: 1fr 1fr; }
+      .action-buttons { flex-direction: column; align-items: stretch; }
+      .btn { justify-content: center; }
+    }
+    @media (max-width: 360px) {
+      .event-details { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     CANVAS DE PARTÍCULAS
+══════════════════════════════════════════════════════════ -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ══════════════════════════════════════════════════════════
+     ① PANTALLA DEL SOBRE
+══════════════════════════════════════════════════════════ -->
+<div id="envelope-screen">
+  <p class="envelope-intro">Con todo mi cariño,<br>te hago llegar esta invitación especial</p>
+
+  <div id="envelope-wrap" onclick="openEnvelope()">
+
+    <!-- SVG del sobre elegante -->
+    <svg id="envelope-svg" viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="envGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#F3E8FF"/>
+          <stop offset="50%"  stop-color="#E9D5FF"/>
+          <stop offset="100%" stop-color="#DDD6FE"/>
+        </linearGradient>
+        <linearGradient id="flapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#C4B5FD"/>
+          <stop offset="100%" stop-color="#A78BFA"/>
+        </linearGradient>
+        <linearGradient id="sealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#F0D98C"/>
+          <stop offset="100%" stop-color="#C9A84C"/>
+        </linearGradient>
+        <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+          <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="rgba(107,63,160,0.25)"/>
+        </filter>
+      </defs>
+
+      <!-- Cuerpo del sobre -->
+      <rect x="10" y="60" width="460" height="230" rx="14" ry="14"
+            fill="url(#envGrad)" stroke="rgba(201,168,224,0.7)" stroke-width="1.5" filter="url(#shadow)"/>
+
+      <!-- Pliegues laterales internos -->
+      <polygon points="10,60 240,200 470,60" fill="rgba(201,168,224,0.18)"/>
+      <line x1="10" y1="290" x2="240" y2="165" stroke="rgba(201,168,224,0.35)" stroke-width="1"/>
+      <line x1="470" y1="290" x2="240" y2="165" stroke="rgba(201,168,224,0.35)" stroke-width="1"/>
+
+      <!-- Solapa (tapa) con clase "flap" para animarla -->
+      <polygon class="flap"
+               points="10,62 240,198 470,62 456,52 24,52"
+               fill="url(#flapGrad)" stroke="rgba(201,168,224,0.6)" stroke-width="1"/>
+
+      <!-- Sello decorativo dorado en la solapa -->
+      <circle cx="240" cy="118" r="28" fill="url(#sealGrad)" opacity="0.95"/>
+      <circle cx="240" cy="118" r="23" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+      <text x="240" y="113" text-anchor="middle" dominant-baseline="middle"
+            font-family="serif" font-size="18" fill="white" font-weight="600">XV</text>
+      <text x="240" y="128" text-anchor="middle" dominant-baseline="middle"
+            font-family="serif" font-size="7" fill="rgba(255,255,255,0.85)" letter-spacing="2">años</text>
+
+      <!-- Destellos en las esquinas -->
+      <text x="38"  y="95"  font-size="14" fill="rgba(201,168,76,0.7)">✦</text>
+      <text x="430" y="95"  font-size="14" fill="rgba(201,168,76,0.7)">✦</text>
+      <text x="38"  y="278" font-size="14" fill="rgba(201,168,76,0.7)">✦</text>
+      <text x="430" y="278" font-size="14" fill="rgba(201,168,76,0.7)">✦</text>
+    </svg>
+
+    <!-- Texto flotante sobre el sobre -->
+    <div class="env-label">
+      "Tengo el gusto de invitarte<br>a mis quince años"
+    </div>
+  </div><!-- /envelope-wrap -->
+
+  <p class="click-hint">✦ &nbsp; Haz clic para abrir &nbsp; ✦</p>
+</div><!-- /envelope-screen -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ② TARJETA DE INVITACIÓN
+══════════════════════════════════════════════════════════ -->
+<div id="invitation-card">
+  <div class="card-box">
+    <div class="card-header-bar"></div>
+
+    <div class="card-inner">
+
+      <!-- ── Encabezado ── -->
+      <p class="card-tagline">♡ &nbsp; Quince Años &nbsp; ♡</p>
+
+      <!-- ════════════════════════════════════════════════════
+           NOMBRE — edita aquí
+           ════════════════════════════════════════════════ -->
+      <h1 class="card-title">Anaid Juliana</h1>
+      <p class="card-subtitle">Ruiz Mateus</p>
+
+      <div class="gold-divider"><span class="gold-divider-icon">✦</span></div>
+
+      <!-- ── Foto principal ── -->
+      <!-- ════════════════════════════════════════════════════
+           FOTO — cambia el src si renombras el archivo
+           ════════════════════════════════════════════════ -->
+      <div class="photo-frame">
+        <img class="photo-img" src="Foto Anaid Juliana Ruiz Mateus.jpeg" alt="Anaid Juliana" />
+      </div>
+
+      <!-- ── Mensaje personal ── -->
+      <!-- ════════════════════════════════════════════════════
+           MENSAJE PERSONAL — edita el texto aquí
+           ════════════════════════════════════════════════ -->
+      <div class="personal-message">
+        <p>
+          Hoy alcanzo un sueño que nació hace quince años.<br>
+          Te pido que compartas conmigo este momento tan especial<br>
+          y lleno de magia. Tu presencia hará este día perfecto.
+        </p>
+      </div>
+
+      <div class="gold-divider"><span class="gold-divider-icon">✦</span></div>
+
+      <!-- ── Detalles del evento ── -->
+      <!-- ════════════════════════════════════════════════════
+           DATOS DEL EVENTO — edita fecha, hora y lugar aquí
+           ════════════════════════════════════════════════ -->
+      <div class="event-details">
+
+        <div class="detail-card">
+          <span class="detail-icon">📅</span>
+          <div class="detail-label">Fecha</div>
+          <!-- ► CAMBIA LA FECHA AQUÍ ◄ -->
+          <div class="detail-value">Sábado<br>15 de Agosto 2026</div>
+        </div>
+
+        <div class="detail-card">
+          <span class="detail-icon">🕖</span>
+          <div class="detail-label">Hora</div>
+          <!-- ► CAMBIA LA HORA AQUÍ ◄ -->
+          <div class="detail-value">7:30 p.m.</div>
+          <div class="detail-note">Puntualidad apreciada</div>
+        </div>
+
+        <div class="detail-card">
+          <span class="detail-icon">📍</span>
+          <div class="detail-label">Lugar</div>
+          <!-- ► CAMBIA EL LUGAR AQUÍ ◄ -->
+          <div class="detail-value">Salón de Eventos<br>El Jardín de las Flores</div>
+          <div class="detail-note">Santa Isabel, Ciudad</div>
+        </div>
+
+        <div class="detail-card">
+          <span class="detail-icon">🥂</span>
+          <div class="detail-label">Programa</div>
+          <div class="detail-value">Recepción · Vals<br>Cena · Baile</div>
+        </div>
+
+      </div>
+
+      <!-- ── Código de vestimenta ── -->
+      <!-- ════════════════════════════════════════════════════
+           CÓDIGO DE VESTIMENTA — edita aquí
+           ════════════════════════════════════════════════ -->
+      <div class="dress-code">
+        <div class="dress-code-title">✦ &nbsp; Código de Vestimenta &nbsp; ✦</div>
+        <div class="dress-code-value">Formal Elegante</div>
+        <div class="detail-note" style="margin-top:0.4rem;">Colores sugeridos: Negro, lila, champagne y dorado</div>
+      </div>
+
+      <div class="gold-divider"><span class="gold-divider-icon">✦</span></div>
+
+      <!-- ── Invitado personalizado (leído desde la URL) ── -->
+      <!-- ════════════════════════════════════════════════════
+           SISTEMA PERSONALIZADO POR URL
+           Para cada invitado genera un link así:
+             invitacion.html?invitado=Juan+Pérez
+             invitacion.html?invitado=Familia+Mateus
+           El nombre se lee del parámetro ?invitado= de la URL.
+           Usa el archivo invitados.txt para tener todos los links.
+           ════════════════════════════════════════════════ -->
+      <div class="guests-section" id="guests-section">
+        <!-- El contenido se genera con JavaScript según el link -->
+      </div>
+
+      <div class="gold-divider"><span class="gold-divider-icon">✦</span></div>
+
+      <!-- ── Botones de acción ── -->
+      <div class="action-buttons">
+
+        <!-- ════════════════════════════════════════════════════
+             WHATSAPP — reemplaza el número de teléfono
+             Formato: 57 (Colombia) + número sin espacios
+             ════════════════════════════════════════════════ -->
+        <a class="btn btn-whatsapp"
+           href="https://wa.me/573133876184?text=¡Hola!%20Confirmo%20mi%20asistencia%20a%20los%20XV%20años%20de%20Anaid%20Juliana%20🌸"
+           target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          Confirmar Asistencia
+        </a>
+
+        <!-- Botón de música -->
+        <button class="btn btn-music" id="music-btn" onclick="toggleMusic()">
+          <span id="music-icon">🎵</span>
+          <span id="music-text">Reproducir Música</span>
+        </button>
+
+      </div>
+
+      <!-- ── Pie de tarjeta ── -->
+      <div class="card-footer">
+        <p>Te esperamos con el corazón lleno de amor &nbsp;·&nbsp; Anaid Juliana</p>
+        <div class="footer-ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+      </div>
+
+    </div><!-- /card-inner -->
+  </div><!-- /card-box -->
+</div><!-- /invitation-card -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     AUDIO — MÚSICA DE FONDO
+     ════════════════════════════════════════════════════════
+     Para usar música propia reemplaza la URL en el atributo src.
+     Opción 1 – archivo local:  src="musica/vals.mp3"
+     Opción 2 – URL externa:    src="https://ejemplo.com/vals.mp3"
+     La pista se reproduce en loop cuando el usuario pulsa el botón.
+════════════════════════════════════════════════════════ -->
+<audio id="bg-music" loop>
+  <!-- ► CAMBIA LA URL DE LA MÚSICA AQUÍ ◄ -->
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+</audio>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
+<script>
+  /* ─────────────────────────────────────────────────────────
+     PARTÍCULAS SUAVES (fondo)
+  ───────────────────────────────────────────────────────── */
+  (function () {
+    const canvas = document.getElementById('particles-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H;
+    const particles = [];
+    const COUNT = 55;
+
+    const COLORS = [
+      'rgba(201,168,224,',   // lila medio
+      'rgba(155,109,191,',   // lila intenso
+      'rgba(237,224,245,',   // lila claro
+      'rgba(201,168,76,',    // dorado
+      'rgba(255,255,255,',   // blanco
+    ];
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    function rand(a, b) { return a + Math.random() * (b - a); }
+
+    function createParticle() {
+      return {
+        x:    rand(0, W),
+        y:    rand(0, H),
+        r:    rand(1.5, 4.5),
+        dx:   rand(-0.3, 0.3),
+        dy:   rand(-0.5, -0.12),
+        a:    rand(0.1, 0.55),
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        twinkle: rand(0, Math.PI * 2),
+        twinkleSpeed: rand(0.015, 0.04),
+      };
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < COUNT; i++) particles.push(createParticle());
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        p.twinkle += p.twinkleSpeed;
+        const alpha = p.a * (0.6 + 0.4 * Math.sin(p.twinkle));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + alpha + ')';
+        ctx.fill();
+
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.y < -10)          { p.y = H + 10; p.x = rand(0, W); }
+        if (p.x < -10)          p.x = W + 10;
+        if (p.x > W + 10)       p.x = -10;
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+
+  /* ─────────────────────────────────────────────────────────
+     ABRIR EL SOBRE
+  ───────────────────────────────────────────────────────── */
+  function openEnvelope() {
+    const wrap   = document.getElementById('envelope-wrap');
+    const screen = document.getElementById('envelope-screen');
+    const card   = document.getElementById('invitation-card');
+
+    // 1. Agrega clase opening para animar la solapa
+    wrap.classList.add('opening');
+
+    // 2. Tras 700ms oculta la pantalla del sobre
+    setTimeout(() => {
+      screen.classList.add('hide');
+    }, 700);
+
+    // 3. Tras 1.1s muestra la tarjeta
+    setTimeout(() => {
+      screen.style.display = 'none';
+      card.classList.add('visible');
+      // Scroll suave al inicio de la tarjeta
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 1100);
+  }
+
+
+  /* ─────────────────────────────────────────────────────────
+     REPRODUCIR / PAUSAR MÚSICA
+  ───────────────────────────────────────────────────────── */
+  let musicPlaying = false;
+
+  function toggleMusic() {
+    const audio  = document.getElementById('bg-music');
+    const btn    = document.getElementById('music-btn');
+    const icon   = document.getElementById('music-icon');
+    const text   = document.getElementById('music-text');
+
+    if (musicPlaying) {
+      audio.pause();
+      btn.classList.remove('playing');
+      icon.textContent = '🎵';
+      text.textContent = 'Reproducir Música';
+      musicPlaying = false;
+    } else {
+      audio.play().catch(() => {
+        alert('Por favor interactúa con la página para reproducir la música.');
+      });
+      btn.classList.add('playing');
+      icon.textContent = '⏸';
+      text.textContent = 'Pausar Música';
+      musicPlaying = true;
+    }
+  }
+
+
+  /* ─────────────────────────────────────────────────────────
+     SISTEMA DE INVITADO PERSONALIZADO POR URL
+     Uso: invitacion.html?invitado=Juan+Pérez
+     Si no hay parámetro, muestra mensaje genérico.
+  ───────────────────────────────────────────────────────── */
+  (function () {
+    const params  = new URLSearchParams(window.location.search);
+    const invitado = params.get('invitado');
+    const section  = document.getElementById('guests-section');
+
+    if (invitado && invitado.trim() !== '') {
+      // Nombre encontrado en la URL → tarjeta personalizada
+      const nombre = decodeURIComponent(invitado.trim());
+      section.innerHTML = `
+        <div class="personal-invite-box">
+          <div class="personal-invite-label">✦ &nbsp; Esta invitación es especialmente para &nbsp; ✦</div>
+          <div class="personal-invite-name">${nombre}</div>
+          <div class="personal-invite-note">
+            Tu presencia hará este día aún más especial.<br>
+            ¡Te esperamos con mucho cariño!
+          </div>
+        </div>`;
+    } else {
+      // Sin parámetro → mensaje genérico
+      section.innerHTML = `
+        <div class="no-guest-box">
+          <p>✦ &nbsp; Invitación personalizada &nbsp; ✦</p>
+          <p style="margin-top:0.5rem;font-size:0.78rem;">
+            Esta invitación se enviará con el nombre de cada invitado.<br>
+            Consulta el archivo <strong>invitados.txt</strong> para los links personalizados.
+          </p>
+        </div>`;
+    }
+  })();
+
+</script>
+
+</body>
+</html>
